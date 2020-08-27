@@ -2,14 +2,14 @@ import boto3
 import copy
 import json
 import os
-import urllib
 import urllib3
 
 KEY_PREFIX_WEBSOCKETS = 'URL_WS_'
 KEY_PREFIX_WEBSOCKETS_EMITTER = 'URL_WSE_'
 KEY_SNS_ARN = 'SNS_ARN'
-SNS_ERROR_PAYLOAD_TEMPLATE = { "NewStateValue": "ALARM" }
-SNS_WARNING_PAYLOAD_TEMPLATE = { "NewStateValue": "WARNING" }
+# NewStateValue of ALARM and WARNING in following PAYLOAD_TEMPLATES is to mimic CloudWatch Alert
+SNS_ERROR_PAYLOAD_TEMPLATE = { "NewStateValue": "ALARM" } # ALARM posts red message in Slack
+SNS_WARNING_PAYLOAD_TEMPLATE = { "NewStateValue": "WARNING" } # WARNING posts amber message in Slack
 JSON_HEADER = { 'Content-Type': 'application/json' }
 WEBSOCKETS_EMITTER_PAYLOAD_TEMPLATE = { 'environment': None, 'channel': 'app.deployed', 'message': 'now' }
 
@@ -28,7 +28,6 @@ def lambda_handler(event, context):
     _check_websockets_instances(sns_client, sns_arn, log)
 
     return { 'statusCode': 200, 'body': json.dumps({'Status':'Success', 'Log': log}) }
-
 
 def _check_websockets_instances(sns_client, sns_arn, log):
     for name, url in _get_urls(KEY_PREFIX_WEBSOCKETS):
