@@ -48,7 +48,7 @@ def _check_websockets_emitter_instances(sns_client, sns_arn, log):
         http_code, data = _post_json(url, payload)
         log.append({'kind':'Websockets Emitter', 'name': name, 'url': url, 'http_code': http_code})
         if http_code == 200:
-            if data.get('status') == 'published':
+            if data.get('status') != 'published':
                 message = copy.deepcopy(SNS_WARNING_PAYLOAD_TEMPLATE)
                 message['URL'] = url
                 message['PAYLOAD'] = payload
