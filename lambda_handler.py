@@ -2,6 +2,7 @@ import boto3
 import copy
 import json
 import os
+import urllib
 import urllib3
 
 KEY_PREFIX_WEBSOCKETS = 'URL_WS_'
@@ -44,7 +45,7 @@ def _check_websockets_emitter_instances(sns_client, sns_arn, log):
     for name, url in _get_urls(KEY_PREFIX_WEBSOCKETS_EMITTER):
         payload = copy.deepcopy(WEBSOCKETS_EMITTER_PAYLOAD_TEMPLATE)
         payload['environment'] = name
-        http_code, data = _post_json(url, JSON_HEADER, payload)
+        http_code, data = _post_json(url, payload)
         log.append({'kind':'Websockets Emitter', 'name': name, 'url': url, 'http_code': http_code})
         if http_code == 200:
             if data.get('status') == 'published':
@@ -64,8 +65,8 @@ def _check_websockets_emitter_instances(sns_client, sns_arn, log):
 def _get(url):
     return urllib3.PoolManager().request('GET', url).status
 
-def _post_json(url, headers={}, payload=None):
-    resp = urllib3.PoolManager().request('POST', url, headers, payload)
+def _post_json(url, payload):
+    resp = urllib3.PoolManager().request('POST', url, headers=JSON_HEADER, body=json.dumps(payload))
     return (resp.status, json.loads(resp.data))
 
 def _publish_alert_to_sns(sns_client, sns_arn, subject, message):
